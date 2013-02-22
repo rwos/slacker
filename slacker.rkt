@@ -67,21 +67,9 @@
 (define *todo-entries* (make-hash))
 (define *goal-entries* (make-hash))
 
-;; list select callback
-(define (show-entry list-box event)
+(define (list-box-select list-box event)
   (define path (get-selected-path list-box))
-
-  (clear *main-pane*)
-  (define button (new button% [parent *main-pane*]
-                              [label "GOTO"]
-                              [callback (lambda (a b) (goto-action path))]))
-  (define label (new message% [parent *main-pane*]
-                              [label path]))
-  (define text   (new text% [auto-wrap #t]))
-  (send text insert (file->string path) 0)
-  (define editor (new editor-canvas% [parent *main-pane*]
-                                     [editor text]))
-   #t)
+  (show-entry path))
 
 (define *tab-panel* (new tab-panel% [choices '("TODO" "GOAL")]
                                     [parent *side-pane*]
@@ -102,17 +90,17 @@
                   [columns '("age" "location")]
                   [style '(vertical-label single column-headers)]
                   [choices '()]
-                  [callback show-entry]))
+                  [callback list-box-select]))
 (define *goal-list*
   (new list-box%  [parent *tab-content*]
                   [label #f]
                   [columns '("age" "location")]
                   [style '(vertical-label single column-headers)]
                   [choices '()]
-                  [callback show-entry]))
+                  [callback list-box-select]))
 (send *goal-list* show #f)
 
-;;; adding and showing entries in the list boxes
+;;; adding and showing entries
 
 (define (sync-list-box entry-ht list-box)
   (define box-entries
@@ -137,17 +125,28 @@
                             path))
   (sync-list-box entry-ht list-box))
 
-;;; invocation
+(define (show-entry path)
+  (clear *main-pane*)
+  (define button (new button% [parent *main-pane*]
+                              [label "GOTO"]
+                              [callback (lambda (a b) (goto-action path))]))
+  (define label (new message% [parent *main-pane*]
+                              [label path]))
+  (define text   (new text% [auto-wrap #t]))
+  (send text insert (file->string path) 0)
+  (new editor-canvas% [parent *main-pane*]
+                      [editor text]))
 
-(send *frame* show #t)
+;;; invocation
 
 (define (reload a b)
   (for-each (curry add-entry *todo-entries* *todo-list*) (todo-files))
   (for-each (curry add-entry *goal-entries* *goal-list*) (goal-files)))
 
-(new button% [parent *frame*]
-             [label "reload"]
-             [callback reload])
+(define *reload-button* (new button% [parent *frame*]
+                                     [label "reload"]
+                                     [callback reload]))
 
+(send *frame* show #t)
 (reload #f #f)
 

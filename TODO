@@ -1,0 +1,7 @@
+- auto-save files on edit (use autosave from framework?)
+- make root-dir and the system command a cmd-line option
+- clean-up the GUI object mess
+- show first on start-up
+- clicking an entry again should re-load the editor
+- switching between goal and todo tabs should also switch the editor
+
