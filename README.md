@@ -10,6 +10,8 @@ displays them. That's all it does, currently.
 Build and Install
 -----------------
 
+You'll need Racket (<http://racket-lang.org/download/>).
+
     $ make
     $ make install
 
