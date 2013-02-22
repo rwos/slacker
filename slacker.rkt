@@ -9,8 +9,9 @@
                  "src/"))
 
 (define (goto-action path)
-  (system (string-append
-            "xfterm4 " (regexp-replace todo-regexp path ""))))
+  (system (string-append "xfterm4 "
+                         *root-dir*
+                         (path->location path))))
 
 ;;; helpers
 
@@ -37,16 +38,20 @@
       [else                   (values (/ x (* 365 24 60 60))     "year")]))
   (s+ (number->string (round n)) " " unit (if (> n 2) "s" "")))
 
-(define (goal-files)
-  (map path->string (find-files (curry regexp-match? #rx"GOAL$") *root-dir*)))
+(define goal-regexp #rx"/GOAL$")
 (define todo-regexp #rx"/TODO$")
+(define (goal-files)
+  (map path->string (find-files (curry regexp-match? goal-regexp) *root-dir*)))
 (define (todo-files)
   (map path->string (find-files (curry regexp-match? todo-regexp) *root-dir*)))
 
-(define (path->todo-location full-path)
+(define (path->location full-path)
+  ;; FIXME: ahem...
   (regexp-replace todo-regexp
-                  (regexp-replace (regexp-quote *root-dir*) full-path "")
-                  ""))
+    (regexp-replace goal-regexp
+      (regexp-replace (regexp-quote *root-dir*) full-path "")
+      "")
+    ""))
 
 (define (get-selected-path list-box)
   (define i (send list-box get-selection))
@@ -119,7 +124,7 @@
     (send list-box set-data i (third e))))
 
 (define (add-entry entry-ht list-box path)
-  (define location (path->todo-location path))
+  (define location (path->location path))
   (hash-set! entry-ht location
                       (list (seconds-since-last-mod path)
                             path))
